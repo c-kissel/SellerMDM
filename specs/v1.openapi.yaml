@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Fox Converter
+  description: Fox Converter API for data conversion
+  version: 1.0.0
+
+servers:
+  - url: 'https'
+
+paths:
+
+  /v1/sellers/id/{id}:
+    get:
+      description: Get seller data from DB
+      operationId: getSeller
+      security:
+        - Keycloak:
+          - sellers:read
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Id of seller
+          schema:
+            type: string
+            format: URLs
+          x-go-param-name: URLParams
+      responses:
+        '200':
+          description: Seller Data in JSON Format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Seller"
+
+
+components:
+  securitySchemes:
+    Keycloak:
+      type: oauth2
+      flows: 
+        authorizationCode:
+          authorizationUrl: 'http://'
+          tokenUrl: 'http://'
+          scopes:
+            orders:read: "Read Seller orders"
+            orders:write: "Change and delete Seller orders"
+      description: OAuth2 client credentials grant flow with Keycloak
+  
+  schemas:
+    
+    Seller:
+      type: object
+      description: Seller Master Data
+      properties:
+        id:
+          type: string
+          format: uuid
+        contact:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        ogrn:
+          type: string
+        inn:
+          type: string
+        city:
+          type: string
+        rating:
+          type: number
+          format: float
+        ratingsCount:
+          type: integer
+          format: int32
+        imageNames:
+          type: array
+          items:
+            type: string
+        created:
+          type: string
+        updated:
+          type: string

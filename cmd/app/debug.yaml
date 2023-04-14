@@ -1,0 +1,14 @@
+base_path: /api
+env_path: ".env"
+
+allowed:
+  hosts:
+    - "http://localhost:8300"
+
+postgres:
+  use: false
+  username: "postgres"
+  host: "localhost"
+  port: "5432"
+  db_name: "postgres"
+  ssl_mode: "disable"
