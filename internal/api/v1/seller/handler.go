@@ -22,10 +22,11 @@ func NewSellerHandler(s *SellerServer) *sellerHandle {
 
 type SellerServer interface {
 	Get(id uuid.UUID) (specs.Seller, error)
+	Create(seller specs.Seller) (specs.Seller, error)
 }
 
 func (h *sellerHandle) GetSeller(w http.ResponseWriter, r *http.Request, id string) {
-	api := "GetSeller (/v1/sellers/id/{id})"
+	api := "GetSeller (/api/v1/sellers/id/{id})"
 	// Convert to UUID
 	uuid, err := uuid.Parse(id)
 	if err != nil {
@@ -57,4 +58,38 @@ func (h *sellerHandle) GetSeller(w http.ResponseWriter, r *http.Request, id stri
 		httperr.Send(w, http.StatusInternalServerError, "%s: failed: %s", api, err.Error())
 		return
 	}
+}
+
+func (h *sellerHandle) PostSeller(w http.ResponseWriter, r *http.Request) {
+	api := "PostSeller (/api/v1/sellers)"
+
+	// Get seller data from JSON
+	var sellerData specs.Seller
+	err := json.NewDecoder(r.Body).Decode(&sellerData)
+	if err != nil {
+		httperr.Send(w, http.StatusBadRequest, "%s: failed to decode JSON: %s", api, err.Error())
+		return
+	}
+
+	// Create new seller
+	result, err := h.Create(sellerData)
+	if err != nil {
+		httperr.Send(w, http.StatusBadRequest, "%s: failed to create seller: %s", api, err.Error())
+		return
+	}
+
+	// Convert to JSON
+	data, err := json.Marshal(result)
+	if err != nil {
+		httperr.Send(w, http.StatusInternalServerError, "%s: failed: %s", api, err.Error())
+		return
+	}
+
+	// Return to caller
+	_, err = w.Write(data)
+	if err != nil {
+		httperr.Send(w, http.StatusInternalServerError, "%s: failed: %s", api, err.Error())
+		return
+	}
+
 }

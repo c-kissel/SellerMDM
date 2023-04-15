@@ -6,9 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
-type Seller struct {
+type SellerModel struct {
 	ID          uuid.UUID `db:"id"`
-	Contact     uuid.UUID `db:"contact"`
 	Name        string    `db:"name"`
 	Description string    `db:"description"`
 	ImageNames  []string  `db:"imagenames"`

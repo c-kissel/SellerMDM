@@ -33,8 +33,14 @@ type Seller struct {
 	Updated      *string             `json:"updated,omitempty"`
 }
 
+// PostSellerJSONRequestBody defines body for PostSeller for application/json ContentType.
+type PostSellerJSONRequestBody = Seller
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
+	// (POST /v1/sellers)
+	PostSeller(w http.ResponseWriter, r *http.Request)
 
 	// (GET /v1/sellers/id/{id})
 	GetSeller(w http.ResponseWriter, r *http.Request, id string)
@@ -48,6 +54,23 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// PostSeller operation middleware
+func (siw *ServerInterfaceWrapper) PostSeller(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, KeycloakScopes, []string{"sellers:write"})
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostSeller(w, r)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
 
 // GetSeller operation middleware
 func (siw *ServerInterfaceWrapper) GetSeller(w http.ResponseWriter, r *http.Request) {
@@ -190,6 +213,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/sellers", wrapper.PostSeller)
+	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/v1/sellers/id/{id}", wrapper.GetSeller)
 	})

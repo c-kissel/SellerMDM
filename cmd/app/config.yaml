@@ -6,9 +6,9 @@ allowed:
     - "http://localhost:8300"
 
 postgres:
-  use: false
+  use: true
   username: "postgres"
   host: "localhost"
   port: "5432"
-  db_name: "postgres"
+  db_name: "prodmdm"
   ssl_mode: "disable"

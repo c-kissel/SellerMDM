@@ -1,2 +1,4 @@
-DROP TABLE sellers;
-DROP TABLE contacts;
+DROP TABLE roles IF EXISTS;
+DROP TABLE reviews IF EXISTS;
+DROP TABLE sellers IF EXISTS;
+DROP TABLE contacts IF EXISTS;

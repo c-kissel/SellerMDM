@@ -33,6 +33,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/Seller"
 
+  /v1/sellers:
+    post:
+      description: Create new Seller
+      operationId: postSeller
+      security:
+        - Keycloak:
+          - sellers:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Seller'
+      responses:
+        '200':
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Seller"
+
 
 components:
   securitySchemes:
@@ -43,8 +64,8 @@ components:
           authorizationUrl: 'http://'
           tokenUrl: 'http://'
           scopes:
-            orders:read: "Read Seller orders"
-            orders:write: "Change and delete Seller orders"
+            sellers:read: "Read sellers"
+            sellers:write: "Change and delete sellers"
       description: OAuth2 client credentials grant flow with Keycloak
   
   schemas:

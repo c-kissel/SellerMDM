@@ -16,6 +16,7 @@ type apiServer struct {
 
 type SellerHandler interface {
 	GetSeller(w http.ResponseWriter, r *http.Request, id string)
+	PostSeller(w http.ResponseWriter, r *http.Request)
 }
 
 type Server interface {

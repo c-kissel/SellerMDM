@@ -1,5 +1,5 @@
 -- Create contact table
-CREATE TABLE contacts {
+CREATE TABLE contacts (
     id UUID PRIMARY KEY,
     firstname varchar(255),
     lastname varchar(255),
@@ -8,13 +8,11 @@ CREATE TABLE contacts {
     messenger varchar(255),
     created_at timestamp with time zone not null,
     updated_at timestamp with time zone not null
-}
-
+);
 
 -- Create sellers table
 CREATE TABLE sellers (
     id UUID PRIMARY KEY,
-    contact UUID references contacts(id) not null,
     name varchar(255) not null,
     ogrn varchar(255),
     inn varchar(255),
@@ -32,4 +30,12 @@ CREATE TABLE reviews (
     rating int,
     commentary text,
     parent UUID references reviews(id)
-)
+);
+
+-- Create role mapping table
+CREATE TABLE roles (
+    id UUID PRIMARY KEY,
+    seller UUID references sellers(id) not null,
+    contact UUID references contacts(id) not null,
+    role text
+);

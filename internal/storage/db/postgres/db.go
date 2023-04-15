@@ -15,6 +15,10 @@ type Config struct {
 	SSLMode  string
 }
 
+const (
+	SELLERS_TABLE = "sellers"
+)
+
 func NewPostgresDB(cfg Config) (*sqlx.DB, error) {
 	connStr := "host=%s port=%s user=%s dbname=%s password=%s sslmode=%s"
 	connStr = fmt.Sprintf(connStr, cfg.Host, cfg.Port, cfg.Username, cfg.DBName, cfg.Password, cfg.SSLMode)

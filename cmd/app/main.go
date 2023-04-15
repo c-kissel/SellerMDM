@@ -11,8 +11,10 @@ import (
 	"github.com/c-kissel/SellerMDM.git/internal/core/config"
 	"github.com/c-kissel/SellerMDM.git/internal/service"
 	"github.com/c-kissel/SellerMDM.git/internal/storage"
+	"github.com/c-kissel/SellerMDM.git/internal/storage/db/postgres"
 	"github.com/c-kissel/SellerMDM.git/specs"
 	"github.com/go-chi/cors"
+	"github.com/jmoiron/sqlx"
 
 	"golang.org/x/sync/errgroup"
 
@@ -46,7 +48,22 @@ func main() {
 	logrus.Debug("Got configuration: ", cfg)
 
 	// Storage
-	var store service.Storer = storage.NewStorage()
+	var sqlDb *sqlx.DB
+
+	if cfg.PostgreSQL.Use {
+		sqlDb, err = postgres.NewPostgresDB(postgres.Config{
+			Host:     os.Getenv("DB_HOST"),
+			Port:     os.Getenv("DB_PORT"),
+			Username: cfg.PostgreSQL.Username,
+			Password: os.Getenv("DB_PASSWORD"),
+			DBName:   cfg.PostgreSQL.DBName,
+			SSLMode:  cfg.PostgreSQL.SSLMode,
+		})
+		if err != nil {
+			logrus.Errorf("failed to initialize sql db: %s", err.Error())
+		}
+	}
+	var store service.Storer = storage.NewStorage(sqlDb)
 
 	// Service
 	var srv v1.Server = service.NewService(&store)
