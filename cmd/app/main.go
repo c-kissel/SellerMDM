@@ -37,15 +37,17 @@ func main() {
 	defer cancel()
 
 	SetupLogging()
-	logrus.Info("Started")
-	logrus.Debug("Started with args: ", os.Args)
+	logrus.Info("|--------------------------------------------------------------------|")
+	logrus.Info("|\t\t\tSELLER MASTER DATA MANAGEMENT\t\t\t|")
+	logrus.Info("|--------------------------------------------------------------------|")
+	// logrus.Debug("Started with args: ", os.Args)
 
 	cfg, err := config.InitConfig(os.Args)
 	if err != nil {
 		logrus.Error("failed to init config: ", err.Error())
 		return
 	}
-	logrus.Debug("Got configuration: ", cfg)
+	// logrus.Debug("Got configuration: ", cfg)
 
 	// Storage
 	var sqlDb *sqlx.DB
@@ -115,7 +117,8 @@ func startHTTPServer(
 
 	group, ctx := errgroup.WithContext(ctx)
 
-	logrus.Infof("Listening on %s", port)
+	logrus.Infof("| Started \t\t\t\t\t\tPORT: %s\t|", port)
+	logrus.Info("|--------------------------------------------------------------------|")
 
 	group.Go(func() error {
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {

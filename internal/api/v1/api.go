@@ -16,6 +16,8 @@ type apiServer struct {
 
 type SellerHandler interface {
 	GetSeller(w http.ResponseWriter, r *http.Request, id string)
+	GetSellersAll(w http.ResponseWriter, r *http.Request)
+	GetSellersByName(w http.ResponseWriter, r *http.Request, params specs.GetSellersByNameParams)
 	PostSeller(w http.ResponseWriter, r *http.Request)
 }
 

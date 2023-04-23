@@ -33,17 +33,29 @@ type Seller struct {
 	Updated      *string             `json:"updated,omitempty"`
 }
 
+// GetSellersByNameParams defines parameters for GetSellersByName.
+type GetSellersByNameParams struct {
+	// Name name of seller
+	Name string `form:"name" json:"name"`
+}
+
 // PostSellerJSONRequestBody defines body for PostSeller for application/json ContentType.
 type PostSellerJSONRequestBody = Seller
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (POST /v1/sellers)
-	PostSeller(w http.ResponseWriter, r *http.Request)
+	// (GET /v1/sellers/all)
+	GetSellersAll(w http.ResponseWriter, r *http.Request)
 
 	// (GET /v1/sellers/id/{id})
 	GetSeller(w http.ResponseWriter, r *http.Request, id string)
+
+	// (GET /v1/sellers/search)
+	GetSellersByName(w http.ResponseWriter, r *http.Request, params GetSellersByNameParams)
+
+	// (POST /v1/sellers/search)
+	PostSeller(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -55,14 +67,14 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// PostSeller operation middleware
-func (siw *ServerInterfaceWrapper) PostSeller(w http.ResponseWriter, r *http.Request) {
+// GetSellersAll operation middleware
+func (siw *ServerInterfaceWrapper) GetSellersAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	ctx = context.WithValue(ctx, KeycloakScopes, []string{"sellers:write"})
+	ctx = context.WithValue(ctx, KeycloakScopes, []string{"sellers:read"})
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostSeller(w, r)
+		siw.Handler.GetSellersAll(w, r)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -91,6 +103,60 @@ func (siw *ServerInterfaceWrapper) GetSeller(w http.ResponseWriter, r *http.Requ
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetSeller(w, r, id)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetSellersByName operation middleware
+func (siw *ServerInterfaceWrapper) GetSellersByName(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	ctx = context.WithValue(ctx, KeycloakScopes, []string{"sellers:read"})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetSellersByNameParams
+
+	// ------------- Required query parameter "name" -------------
+
+	if paramValue := r.URL.Query().Get("name"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "name"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "name", r.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetSellersByName(w, r, params)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// PostSeller operation middleware
+func (siw *ServerInterfaceWrapper) PostSeller(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, KeycloakScopes, []string{"sellers:write"})
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostSeller(w, r)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -214,10 +280,16 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/v1/sellers", wrapper.PostSeller)
+		r.Get(options.BaseURL+"/v1/sellers/all", wrapper.GetSellersAll)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/v1/sellers/id/{id}", wrapper.GetSeller)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/v1/sellers/search", wrapper.GetSellersByName)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/sellers/search", wrapper.PostSeller)
 	})
 
 	return r

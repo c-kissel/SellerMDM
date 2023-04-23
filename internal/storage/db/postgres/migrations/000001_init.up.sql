@@ -17,7 +17,6 @@ CREATE TABLE sellers (
     ogrn varchar(255),
     inn varchar(255),
     city varchar(255),
-    imagenames text[],
     created_at timestamp with time zone not null,
     updated_at timestamp with time zone not null
 );

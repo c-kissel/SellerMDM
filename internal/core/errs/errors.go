@@ -13,3 +13,7 @@ var ErrSKUEmpty = errors.New("storage: SKU attr of document is empty")
 
 // ErrEmptyInput is returned when given input data is empty (typically an empty array).
 var ErrEmptyInput = errors.New("input data is empty")
+
+// ErrDuplicateNotAllowed is returned in situation when duplicate is prohibited
+// (e.g. create item with same name or id)
+var ErrDuplicateNotAllowed = errors.New("duplicate not allowed")

@@ -5,9 +5,11 @@ import (
 	"time"
 
 	"github.com/c-kissel/SellerMDM.git/internal/core/data/seller"
+	"github.com/c-kissel/SellerMDM.git/internal/core/errs"
 	"github.com/c-kissel/SellerMDM.git/internal/storage/db/postgres"
 	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
+	// "github.com/lib/pq"
 )
 
 type sellerSQL struct {
@@ -23,7 +25,9 @@ func NewSellerSQL(d *sqlx.DB) *sellerSQL {
 // Gets from Seller table mapping of seller code to SKU
 func (sql *sellerSQL) Get(id uuid.UUID) (*seller.SellerModel, error) {
 	var data seller.SellerModel
-	query := fmt.Sprintf(`SELECT %s FROM %s WHERE id=$1`, getFields(), postgres.SELLERS_TABLE)
+
+	fields := "id, name, ogrn, inn, city, created_at, updated_at"
+	query := fmt.Sprintf(`SELECT %s FROM %s WHERE id=$1`, fields, postgres.SELLERS_TABLE)
 
 	err := sql.db.Get(&data, query, id)
 	if err != nil {
@@ -31,6 +35,20 @@ func (sql *sellerSQL) Get(id uuid.UUID) (*seller.SellerModel, error) {
 	}
 
 	return &data, nil
+}
+
+func (sql *sellerSQL) All() ([]seller.SellerModel, error) {
+	var data []seller.SellerModel
+
+	fields := "id, name, ogrn, inn, city, created_at, updated_at"
+	query := fmt.Sprintf(`SELECT %s FROM %s`, fields, postgres.SELLERS_TABLE)
+
+	err := sql.db.Select(&data, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func (sql *sellerSQL) Insert(data seller.SellerModel) error {
@@ -51,6 +69,19 @@ func (sql *sellerSQL) Insert(data seller.SellerModel) error {
 	return nil
 }
 
-func getFields() string {
-	return "id, name, ogrn, inn, city"
+func (sql *sellerSQL) Search(name string) ([]seller.SellerModel, error) {
+	// Define the query to search for items in the SQL table
+	query := fmt.Sprintf(`SELECT * FROM %s WHERE name = $1`, postgres.SELLERS_TABLE)
+
+	sellersData := []seller.SellerModel{}
+	err := sql.db.Select(&sellersData, query, name)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(sellersData) == 0 {
+		return nil, errs.ErrNotFound
+	}
+
+	return sellersData, nil
 }

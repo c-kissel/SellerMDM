@@ -11,7 +11,7 @@ paths:
 
   /v1/sellers/id/{id}:
     get:
-      description: Get seller data from DB
+      description: Get seller data from DB by id
       operationId: getSeller
       security:
         - Keycloak:
@@ -33,7 +33,46 @@ paths:
               schema:
                 $ref: "#/components/schemas/Seller"
 
-  /v1/sellers:
+  /v1/sellers/all:
+    get:
+      description: Get all seller's Ids
+      operationId: GetSellersAll
+      security:
+        - Keycloak:
+          - sellers:read
+      responses:
+        '200':
+          description: Seller Data in JSON Format
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Seller"
+
+  /v1/sellers/search:
+    get:
+      description: Get seller data from DB by name
+      operationId: getSellersByName
+      security:
+        - Keycloak:
+          - sellers:read
+      parameters:
+        - name: name
+          required: true
+          in: query
+          description: name of seller
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Seller Data in JSON Format
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Seller"
     post:
       description: Create new Seller
       operationId: postSeller

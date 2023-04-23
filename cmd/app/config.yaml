@@ -3,7 +3,7 @@ env_path: ".env"
 
 allowed:
   hosts:
-    - "http://localhost:8300"
+    - "http://localhost:8080"
 
 postgres:
   use: true
