@@ -1,0 +1,5 @@
+ALTER TABLE sellers 
+DROP COLUMN logo,
+DROP COLUMN site,
+DROP COLUMN yml,
+DROP COLUMN memo;

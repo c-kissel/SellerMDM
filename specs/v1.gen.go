@@ -17,20 +17,44 @@ const (
 	KeycloakScopes = "Keycloak.Scopes"
 )
 
-// Seller Seller Master Data
-type Seller struct {
-	City         *string             `json:"city,omitempty"`
-	Contact      *openapi_types.UUID `json:"contact,omitempty"`
-	Created      *string             `json:"created,omitempty"`
-	Description  *string             `json:"description,omitempty"`
-	Id           *openapi_types.UUID `json:"id,omitempty"`
-	ImageNames   *[]string           `json:"imageNames,omitempty"`
-	Inn          *string             `json:"inn,omitempty"`
-	Name         *string             `json:"name,omitempty"`
-	Ogrn         *string             `json:"ogrn,omitempty"`
-	Rating       *float32            `json:"rating,omitempty"`
-	RatingsCount *int32              `json:"ratingsCount,omitempty"`
-	Updated      *string             `json:"updated,omitempty"`
+// EditSellerRequest defines model for EditSellerRequest.
+type EditSellerRequest struct {
+	City *string             `json:"city,omitempty"`
+	Id   *openapi_types.UUID `json:"id,omitempty"`
+	Inn  *string             `json:"inn,omitempty"`
+	Logo *string             `json:"logo,omitempty"`
+	Memo *string             `json:"memo,omitempty"`
+	Name *string             `json:"name,omitempty"`
+	Ogrn *string             `json:"ogrn,omitempty"`
+	Site *string             `json:"site,omitempty"`
+	Yml  *string             `json:"yml,omitempty"`
+}
+
+// NewSellerRequest Seller Master Data
+type NewSellerRequest struct {
+	City *string `json:"city,omitempty"`
+	Inn  *string `json:"inn,omitempty"`
+	Logo *string `json:"logo,omitempty"`
+	Memo *string `json:"memo,omitempty"`
+	Name *string `json:"name,omitempty"`
+	Ogrn *string `json:"ogrn,omitempty"`
+	Site *string `json:"site,omitempty"`
+	Yml  *string `json:"yml,omitempty"`
+}
+
+// SellerResponse defines model for SellerResponse.
+type SellerResponse struct {
+	City    *string             `json:"city,omitempty"`
+	Created *string             `json:"created,omitempty"`
+	Id      *openapi_types.UUID `json:"id,omitempty"`
+	Inn     *string             `json:"inn,omitempty"`
+	Logo    *string             `json:"logo,omitempty"`
+	Memo    *string             `json:"memo,omitempty"`
+	Name    *string             `json:"name,omitempty"`
+	Ogrn    *string             `json:"ogrn,omitempty"`
+	Site    *string             `json:"site,omitempty"`
+	Updated *string             `json:"updated,omitempty"`
+	Yml     *string             `json:"yml,omitempty"`
 }
 
 // GetSellersByNameParams defines parameters for GetSellersByName.
@@ -39,23 +63,32 @@ type GetSellersByNameParams struct {
 	Name string `form:"name" json:"name"`
 }
 
-// PostSellerJSONRequestBody defines body for PostSeller for application/json ContentType.
-type PostSellerJSONRequestBody = Seller
+// PostNewSellerJSONRequestBody defines body for PostNewSeller for application/json ContentType.
+type PostNewSellerJSONRequestBody = NewSellerRequest
+
+// PutSellerJSONRequestBody defines body for PutSeller for application/json ContentType.
+type PutSellerJSONRequestBody = EditSellerRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
+	// (POST /v1/sellers)
+	PostNewSeller(w http.ResponseWriter, r *http.Request)
+
 	// (GET /v1/sellers/all)
 	GetSellersAll(w http.ResponseWriter, r *http.Request)
+
+	// (DELETE /v1/sellers/id/{id})
+	DeleteSeller(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
 
 	// (GET /v1/sellers/id/{id})
 	GetSeller(w http.ResponseWriter, r *http.Request, id string)
 
+	// (PUT /v1/sellers/id/{id})
+	PutSeller(w http.ResponseWriter, r *http.Request, id openapi_types.UUID)
+
 	// (GET /v1/sellers/search)
 	GetSellersByName(w http.ResponseWriter, r *http.Request, params GetSellersByNameParams)
-
-	// (POST /v1/sellers/search)
-	PostSeller(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -67,6 +100,23 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
+// PostNewSeller operation middleware
+func (siw *ServerInterfaceWrapper) PostNewSeller(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, KeycloakScopes, []string{"sellers:write"})
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostNewSeller(w, r)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 // GetSellersAll operation middleware
 func (siw *ServerInterfaceWrapper) GetSellersAll(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -75,6 +125,34 @@ func (siw *ServerInterfaceWrapper) GetSellersAll(w http.ResponseWriter, r *http.
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetSellersAll(w, r)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// DeleteSeller operation middleware
+func (siw *ServerInterfaceWrapper) DeleteSeller(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, chi.URLParam(r, "id"), &id)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	ctx = context.WithValue(ctx, KeycloakScopes, []string{"sellers:delete"})
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteSeller(w, r, id)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -112,6 +190,34 @@ func (siw *ServerInterfaceWrapper) GetSeller(w http.ResponseWriter, r *http.Requ
 	handler.ServeHTTP(w, r.WithContext(ctx))
 }
 
+// PutSeller operation middleware
+func (siw *ServerInterfaceWrapper) PutSeller(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithLocation("simple", false, "id", runtime.ParamLocationPath, chi.URLParam(r, "id"), &id)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	ctx = context.WithValue(ctx, KeycloakScopes, []string{"sellers:write"})
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PutSeller(w, r, id)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 // GetSellersByName operation middleware
 func (siw *ServerInterfaceWrapper) GetSellersByName(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -140,23 +246,6 @@ func (siw *ServerInterfaceWrapper) GetSellersByName(w http.ResponseWriter, r *ht
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetSellersByName(w, r, params)
-	})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r.WithContext(ctx))
-}
-
-// PostSeller operation middleware
-func (siw *ServerInterfaceWrapper) PostSeller(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, KeycloakScopes, []string{"sellers:write"})
-
-	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostSeller(w, r)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -280,16 +369,22 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/v1/sellers", wrapper.PostNewSeller)
+	})
+	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/v1/sellers/all", wrapper.GetSellersAll)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/v1/sellers/id/{id}", wrapper.DeleteSeller)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/v1/sellers/id/{id}", wrapper.GetSeller)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/v1/sellers/search", wrapper.GetSellersByName)
+		r.Put(options.BaseURL+"/v1/sellers/id/{id}", wrapper.PutSeller)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/v1/sellers/search", wrapper.PostSeller)
+		r.Get(options.BaseURL+"/v1/sellers/search", wrapper.GetSellersByName)
 	})
 
 	return r

@@ -21,10 +21,12 @@ func NewSellerHandler(s *SellerServer) *sellerHandle {
 }
 
 type SellerServer interface {
-	Get(id uuid.UUID) (specs.Seller, error)
-	GetAll() ([]specs.Seller, error)
-	GetByName(name string) ([]specs.Seller, error)
-	Create(seller specs.Seller) (specs.Seller, error)
+	Get(id uuid.UUID) (specs.SellerResponse, error)
+	GetAll() ([]specs.SellerResponse, error)
+	GetByName(name string) ([]specs.SellerResponse, error)
+	Create(newSeller specs.NewSellerRequest) (specs.SellerResponse, error)
+	Update(id uuid.UUID, sellerRequest specs.EditSellerRequest) (specs.SellerResponse, error)
+	Delete(id uuid.UUID) error
 }
 
 func (h *sellerHandle) GetSeller(w http.ResponseWriter, r *http.Request, id string) {
@@ -124,11 +126,11 @@ func (h *sellerHandle) GetSellersByName(w http.ResponseWriter, r *http.Request, 
 	}
 }
 
-func (h *sellerHandle) PostSeller(w http.ResponseWriter, r *http.Request) {
+func (h *sellerHandle) PostNewSeller(w http.ResponseWriter, r *http.Request) {
 	api := "PostSeller (/api/v1/sellers)"
 
 	// Get seller data from JSON
-	var sellerData specs.Seller
+	var sellerData specs.NewSellerRequest
 	err := json.NewDecoder(r.Body).Decode(&sellerData)
 	if err != nil {
 		httperr.Send(w, http.StatusBadRequest, "%s: failed to decode JSON: %s", api, err.Error())
@@ -156,4 +158,49 @@ func (h *sellerHandle) PostSeller(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+func (h *sellerHandle) PutSeller(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+	api := "PutSeller (/api/v1/sellers/{id})"
+
+	// Get seller data from JSON
+	var sellerData specs.EditSellerRequest
+	err := json.NewDecoder(r.Body).Decode(&sellerData)
+	if err != nil {
+		httperr.Send(w, http.StatusBadRequest, "%s: failed to decode JSON: %s", api, err.Error())
+		return
+	}
+
+	// Update seller
+	result, err := h.Update(id, sellerData)
+	if err != nil {
+		httperr.Send(w, http.StatusBadRequest, "%s: failed to create seller: %s", api, err.Error())
+		return
+	}
+
+	// Convert to JSON
+	data, err := json.Marshal(result)
+	if err != nil {
+		httperr.Send(w, http.StatusInternalServerError, "%s: failed: %s", api, err.Error())
+		return
+	}
+
+	// Return to caller
+	_, err = w.Write(data)
+	if err != nil {
+		httperr.Send(w, http.StatusInternalServerError, "%s: failed: %s", api, err.Error())
+		return
+	}
+}
+
+func (h *sellerHandle) DeleteSeller(w http.ResponseWriter, r *http.Request, id uuid.UUID) {
+	api := "DeleteSeller (/api/v1/sellers/{id})"
+
+	err := h.Delete(id)
+	if err != nil {
+		httperr.Send(w, http.StatusInternalServerError, "%s: failed: %s", api, err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

@@ -26,7 +26,7 @@ func NewSellerSQL(d *sqlx.DB) *sellerSQL {
 func (sql *sellerSQL) Get(id uuid.UUID) (*seller.SellerModel, error) {
 	var data seller.SellerModel
 
-	fields := "id, name, ogrn, inn, city, created_at, updated_at"
+	fields := "city, created_at, id, inn, logo, memo, name, ogrn, site, updated_at, yml"
 	query := fmt.Sprintf(`SELECT %s FROM %s WHERE id=$1`, fields, postgres.SELLERS_TABLE)
 
 	err := sql.db.Get(&data, query, id)
@@ -40,7 +40,7 @@ func (sql *sellerSQL) Get(id uuid.UUID) (*seller.SellerModel, error) {
 func (sql *sellerSQL) All() ([]seller.SellerModel, error) {
 	var data []seller.SellerModel
 
-	fields := "id, name, ogrn, inn, city, created_at, updated_at"
+	fields := "city, created_at, id, inn, logo, memo, name, ogrn, site, updated_at, yml"
 	query := fmt.Sprintf(`SELECT %s FROM %s`, fields, postgres.SELLERS_TABLE)
 
 	err := sql.db.Select(&data, query)
@@ -54,18 +54,45 @@ func (sql *sellerSQL) All() ([]seller.SellerModel, error) {
 func (sql *sellerSQL) Insert(data seller.SellerModel) error {
 	var id uuid.UUID
 
-	query := fmt.Sprintf(`INSERT INTO %s (id, name, ogrn, inn, city, created_at, updated_at)
-							VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`, postgres.SELLERS_TABLE)
+	fields := "city, created_at, id, inn, logo, memo, name, ogrn, site, updated_at, yml"
+	query := fmt.Sprintf(`INSERT INTO %s (%s)
+							VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING id`, postgres.SELLERS_TABLE, fields)
 
-	created := time.Now()
-	updated := created
-	data.CreatedAt = created
-	data.UpdatedAt = updated
+	timeNow := time.Now()
+	data.CreatedAt = timeNow
+	data.UpdatedAt = timeNow
 
-	row := sql.db.QueryRow(query, data.ID, data.Name, data.OGRN, data.INN, data.City, created, updated)
+	row := sql.db.QueryRow(query, data.City, data.CreatedAt, data.Id, data.INN, data.Logo, data.Memo, data.Name, data.OGRN, data.Site, data.UpdatedAt, data.YML)
 	if err := row.Scan(&id); err != nil {
 		return err
 	}
+	return nil
+}
+
+func (sql *sellerSQL) Update(data seller.SellerModel) error {
+
+	data.UpdatedAt = time.Now()
+
+	query := fmt.Sprintf(`
+				UPDATE %s 
+				SET
+					city=:city,
+					inn=:inn,
+					logo=:logo,
+					memo=:memo,
+					name=:name,
+					ogrn=:ogrn,
+					site=:site,
+					updated_at=:updated_at,
+					yml=:yml
+				WHERE id=:id`,
+		postgres.SELLERS_TABLE)
+
+	_, err := sql.db.NamedExec(query, data)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -84,4 +111,14 @@ func (sql *sellerSQL) Search(name string) ([]seller.SellerModel, error) {
 	}
 
 	return sellersData, nil
+}
+
+func (sql *sellerSQL) Delete(id uuid.UUID) error {
+	query := fmt.Sprintf(`DELETE FROM %s WHERE id = $1`, postgres.SELLERS_TABLE)
+	_, err := sql.db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

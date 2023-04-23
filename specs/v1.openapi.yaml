@@ -9,6 +9,24 @@ servers:
 
 paths:
 
+  /v1/sellers:
+    post:
+      description: Create new Seller data record
+      operationId: postNewSeller
+      security:
+        - Keycloak:
+          - sellers:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/NewSellerRequest"
+      responses:
+        '200':
+          description: Ok
+
   /v1/sellers/id/{id}:
     get:
       description: Get seller data from DB by id
@@ -31,7 +49,52 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Seller"
+                $ref: "#/components/schemas/SellerResponse"
+
+    put:
+      description: Edit Seller data record
+      operationId: putSeller
+      security:
+        - Keycloak:
+          - sellers:write
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Id of seller
+          schema:
+            type: string
+            format: uuid
+          x-go-param-name: URLParams
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/EditSellerRequest"
+      responses:
+        '200':
+          description: Ok
+
+    delete:
+      description: Delete Seller data record
+      operationId: deleteSeller
+      security:
+        - Keycloak:
+          - sellers:delete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Id of seller
+          schema:
+            type: string
+            format: uuid
+          x-go-param-name: URLParams
+      responses:
+        '200':
+          description: Ok
 
   /v1/sellers/all:
     get:
@@ -48,7 +111,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Seller"
+                  $ref: "#/components/schemas/SellerResponse"
 
   /v1/sellers/search:
     get:
@@ -72,26 +135,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Seller"
-    post:
-      description: Create new Seller
-      operationId: postSeller
-      security:
-        - Keycloak:
-          - sellers:write
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Seller'
-      responses:
-        '200':
-          description: Ok
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Seller"
+                  $ref: "#/components/schemas/SellerResponse"
 
 
 components:
@@ -109,37 +153,44 @@ components:
   
   schemas:
     
-    Seller:
+    NewSellerRequest:
       type: object
       description: Seller Master Data
       properties:
-        id:
-          type: string
-          format: uuid
-        contact:
-          type: string
-          format: uuid
-        name:
-          type: string
-        description:
-          type: string
-        ogrn:
+        city:
           type: string
         inn:
           type: string
-        city:
+        logo:
           type: string
-        rating:
-          type: number
-          format: float
-        ratingsCount:
-          type: integer
-          format: int32
-        imageNames:
-          type: array
-          items:
-            type: string
-        created:
+        memo:
           type: string
-        updated:
+        name:
           type: string
+        ogrn:
+          type: string
+        site:
+          type: string
+        yml:
+          type: string
+    
+    EditSellerRequest:
+      allOf:
+        - $ref: "#/components/schemas/NewSellerRequest"
+        - type: object
+          description: Seller Master Data
+          properties:
+            id:
+              type: string
+              format: uuid
+    
+    SellerResponse:
+      allOf:
+        - $ref: "#/components/schemas/EditSellerRequest"
+        - type: object
+          description: Seller Master Data
+          properties:
+            created:
+              type: string
+            updated:
+              type: string
