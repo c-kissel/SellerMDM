@@ -1,5 +1,6 @@
 base_path: /api
 env_path: ".env"
+app_port: ":17100"
 
 allowed:
   hosts:
@@ -8,5 +9,7 @@ allowed:
 postgres:
   use: true
   username: "postgres"
+  host: "localhost"
+  port: "10100"
   db_name: "smdm"
   ssl_mode: "disable"

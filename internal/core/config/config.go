@@ -17,6 +17,7 @@ var cfg Config
 type Config struct {
 	BasePath string `yaml:"base_path"`
 	EnvPath  string `yaml:"env_path"`
+	AppPort  string `yaml:"app_port"`
 
 	Allowed struct {
 		Hosts []string `yanml:"hosts"`

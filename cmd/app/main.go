@@ -54,8 +54,8 @@ func main() {
 
 	if cfg.PostgreSQL.Use {
 		sqlDb, err = postgres.NewPostgresDB(postgres.Config{
-			Host:     os.Getenv("DB_HOST"),
-			Port:     os.Getenv("DB_PORT"),
+			Host:     cfg.PostgreSQL.Host,
+			Port:     cfg.PostgreSQL.Port,
 			Username: cfg.PostgreSQL.Username,
 			Password: os.Getenv("DB_PASSWORD"),
 			DBName:   cfg.PostgreSQL.DBName,
@@ -108,7 +108,10 @@ func startHTTPServer(
 
 	router.Handle("/*", handler)
 
-	port := os.Getenv("PORT")
+	if cfg.AppPort == "" {
+		logrus.Fatal("App port not defined. Add 'app_port: \":12345\"' to config.yaml")
+	}
+	port := cfg.AppPort
 
 	httpServer := http.Server{
 		Addr:    port,
@@ -117,7 +120,7 @@ func startHTTPServer(
 
 	group, ctx := errgroup.WithContext(ctx)
 
-	logrus.Infof("| Started \t\t\t\t\t\tPORT: %s\t|", port)
+	logrus.Infof("| Started \t\t\t\t\t\tPORT %s\t|", port)
 	logrus.Info("|--------------------------------------------------------------------|")
 
 	group.Go(func() error {
