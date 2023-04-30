@@ -20,7 +20,7 @@ CREATE TABLE sellers (
     logo text,
     site text,
     yml text,
-    memo text;
+    memo text,
     created_at timestamp with time zone not null,
     updated_at timestamp with time zone not null
 );
