@@ -8,6 +8,3 @@ CREATE DATABASE smdm
     TABLESPACE = pg_default
     CONNECTION LIMIT = -1
     IS_TEMPLATE = False;
-
-COMMENT ON DATABASE smdm
-    IS 'Seller Master Data Management';
