@@ -24,9 +24,8 @@ MIGRATIONS=""$( cd "$DIR/../migrations" && pwd )""
 echo Migrations Path: $MIGRATIONS
 echo Database: $DB_NAME
 
-
 sequence_op="$1"
 steps="$2"
 
-docker run -v $MIGRATIONS:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable $sequence_op $steps
+docker run -v $MIGRATIONS:/migrations --network $DOCKER_NETWORK migrate/migrate -path=/migrations/ -database postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable $sequence_op $steps
 
