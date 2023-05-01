@@ -1,4 +1,4 @@
-base_path: /api
+base_path: /sellermdm/api
 env_path: ".env"
 app_port: ":17100"
 
