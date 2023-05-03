@@ -9,7 +9,7 @@ allowed:
 postgres:
   use: true
   username: "postgres"
-  host: "postgres"
+  host: "smdmsql"
   port: "10100"
   db_name: "smdm"
   ssl_mode: "disable"
