@@ -157,6 +157,9 @@ components:
       type: object
       description: Seller Master Data
       properties:
+        id:
+          type: string
+          format: uuid
         city:
           type: string
         inn:
@@ -179,11 +182,9 @@ components:
         - $ref: "#/components/schemas/NewSellerRequest"
         - type: object
           description: Seller Master Data
-          properties:
-            id:
-              type: string
-              format: uuid
-    
+          required:
+            - "id"
+
     SellerResponse:
       allOf:
         - $ref: "#/components/schemas/EditSellerRequest"

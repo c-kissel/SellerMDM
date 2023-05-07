@@ -69,10 +69,6 @@ func (h *sellerHandle) GetSellersAll(w http.ResponseWriter, r *http.Request) {
 
 	// Get Sellers
 	sellers, err := h.GetAll()
-	if err == errs.ErrNotFound {
-		httperr.Send(w, http.StatusNotFound, "%s: %s", api, err.Error())
-		return
-	}
 	if err != nil {
 		httperr.Send(w, http.StatusInternalServerError, "%s: failed: %s", api, err.Error())
 		return

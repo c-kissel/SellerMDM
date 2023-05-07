@@ -19,6 +19,19 @@ const (
 
 // EditSellerRequest defines model for EditSellerRequest.
 type EditSellerRequest struct {
+	City *string            `json:"city,omitempty"`
+	Id   openapi_types.UUID `json:"id"`
+	Inn  *string            `json:"inn,omitempty"`
+	Logo *string            `json:"logo,omitempty"`
+	Memo *string            `json:"memo,omitempty"`
+	Name *string            `json:"name,omitempty"`
+	Ogrn *string            `json:"ogrn,omitempty"`
+	Site *string            `json:"site,omitempty"`
+	Yml  *string            `json:"yml,omitempty"`
+}
+
+// NewSellerRequest Seller Master Data
+type NewSellerRequest struct {
 	City *string             `json:"city,omitempty"`
 	Id   *openapi_types.UUID `json:"id,omitempty"`
 	Inn  *string             `json:"inn,omitempty"`
@@ -30,31 +43,19 @@ type EditSellerRequest struct {
 	Yml  *string             `json:"yml,omitempty"`
 }
 
-// NewSellerRequest Seller Master Data
-type NewSellerRequest struct {
-	City *string `json:"city,omitempty"`
-	Inn  *string `json:"inn,omitempty"`
-	Logo *string `json:"logo,omitempty"`
-	Memo *string `json:"memo,omitempty"`
-	Name *string `json:"name,omitempty"`
-	Ogrn *string `json:"ogrn,omitempty"`
-	Site *string `json:"site,omitempty"`
-	Yml  *string `json:"yml,omitempty"`
-}
-
 // SellerResponse defines model for SellerResponse.
 type SellerResponse struct {
-	City    *string             `json:"city,omitempty"`
-	Created *string             `json:"created,omitempty"`
-	Id      *openapi_types.UUID `json:"id,omitempty"`
-	Inn     *string             `json:"inn,omitempty"`
-	Logo    *string             `json:"logo,omitempty"`
-	Memo    *string             `json:"memo,omitempty"`
-	Name    *string             `json:"name,omitempty"`
-	Ogrn    *string             `json:"ogrn,omitempty"`
-	Site    *string             `json:"site,omitempty"`
-	Updated *string             `json:"updated,omitempty"`
-	Yml     *string             `json:"yml,omitempty"`
+	City    *string            `json:"city,omitempty"`
+	Created *string            `json:"created,omitempty"`
+	Id      openapi_types.UUID `json:"id"`
+	Inn     *string            `json:"inn,omitempty"`
+	Logo    *string            `json:"logo,omitempty"`
+	Memo    *string            `json:"memo,omitempty"`
+	Name    *string            `json:"name,omitempty"`
+	Ogrn    *string            `json:"ogrn,omitempty"`
+	Site    *string            `json:"site,omitempty"`
+	Updated *string            `json:"updated,omitempty"`
+	Yml     *string            `json:"yml,omitempty"`
 }
 
 // GetSellersByNameParams defines parameters for GetSellersByName.

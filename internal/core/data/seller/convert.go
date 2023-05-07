@@ -61,7 +61,7 @@ func (s *SellerModel) ToSpecs() specs.SellerResponse {
 	result := &specs.SellerResponse{
 		City:    &city,
 		Created: &created,
-		Id:      &id,
+		Id:      id,
 		Inn:     &inn,
 		Logo:    &logo,
 		Memo:    &memo,
@@ -144,12 +144,7 @@ func FromEditRequest(s specs.EditSellerRequest) SellerModel {
 	}
 
 	// Id
-	var id uuid.UUID
-	if s.Id == nil {
-		id = uuid.New()
-	} else {
-		id = *s.Id
-	}
+	var id uuid.UUID = s.Id
 
 	// INN
 	var inn string

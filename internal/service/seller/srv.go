@@ -48,9 +48,13 @@ func (s *sellerSrv) Create(newSeller specs.NewSellerRequest) (specs.SellerRespon
 		return specs.SellerResponse{}, errs.ErrDuplicateNotAllowed
 	}
 
-	// Create new Id for seller
+	// Take from request or create new Id for seller
+	if newSeller.Id != nil {
+		data.Id = *newSeller.Id
+	} else {
+		data.Id = uuid.New()
+	}
 
-	data.Id = uuid.New()
 	err = s.Insert(data)
 	if err != nil {
 		return specs.SellerResponse{}, err
@@ -85,7 +89,7 @@ func (s *sellerSrv) Update(id uuid.UUID, sellerRequest specs.EditSellerRequest) 
 // Returns all sellers from DB
 func (s *sellerSrv) GetAll() ([]specs.SellerResponse, error) {
 	data, err := s.All()
-	if err != nil {
+	if err != nil && err != errs.ErrNotFound {
 		return nil, err
 	}
 
