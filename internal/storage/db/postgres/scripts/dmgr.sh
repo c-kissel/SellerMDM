@@ -22,6 +22,7 @@ source $DIR/db.secret
 MIGRATIONS=""$( cd "$DIR/../migrations" && pwd )""
 
 echo Migrations Path: $MIGRATIONS
+echo Host:Port $DB_HOST:$DB_PORT
 echo Database: $DB_NAME
 
 sequence_op="$1"

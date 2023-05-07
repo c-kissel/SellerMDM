@@ -5,6 +5,7 @@ app_port: ":17100"
 allowed:
   hosts:
     - "http://localhost:8080"
+    - "http://localhost:8300"
 
 postgres:
   use: true
